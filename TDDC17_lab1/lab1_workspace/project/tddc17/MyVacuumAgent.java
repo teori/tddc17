@@ -34,6 +34,12 @@ class MyAgentState
 	public static final int WEST = 3;
 	public int agent_direction = EAST;
 	
+	public static final int FIND_CORNER = 0;
+	public static final int TURN = 1;
+	public static final int CLEAR_ROWS = 2;
+	public static final int FIND_HOME = 3;
+	public int agent_state = FIND_CORNER;
+	
 	MyAgentState()
 	{
 		for (int i=0; i < world.length; i++)
@@ -100,7 +106,8 @@ class MyAgentProgram implements AgentProgram {
 	private Random random_generator = new Random();
 	
 	// Here you can define your variables!
-	public int iterationCounter = 10;
+	public int bumps = 0;
+	public int iterationCounter = 1000;
 	public MyAgentState state = new MyAgentState();
 	
 	// moves the Agent to a random start position
@@ -197,8 +204,23 @@ class MyAgentProgram implements AgentProgram {
 	    {
 	    	if (bump)
 	    	{
-	    		state.agent_last_action=state.ACTION_NONE;
-		    	return NoOpAction.NO_OP;
+	    		bumps++;
+	    		switch (state.agent_state) {
+	    		case MyAgentState.FIND_CORNER:
+	    			if (bumps >= 2) {
+	    				state.agent_state = MyAgentState.TURN;
+	    			}
+	    			break;
+	    		case MyAgentState.TURN:
+		    		state.agent_state = MyAgentState.CLEAR_ROWS;
+		    		break;
+	    		case MyAgentState.CLEAR_ROWS:
+	    			break;
+	    		
+	    	}
+	    		state.agent_direction = (state.agent_direction+1 % 4);
+	    		state.agent_last_action = state.ACTION_TURN_RIGHT;
+	    		return LIUVacuumEnvironment.ACTION_TURN_RIGHT;
 	    	}
 	    	else
 	    	{
