@@ -34,10 +34,9 @@ class MyAgentState
 	public static final int WEST = 3;
 	public int agent_direction = EAST;
 	
-	public static final int FIND_CORNER = 0;
-	public static final int TURN = 1;
-	public static final int CLEAR_ROWS = 2;
-	public static final int FIND_HOME = 3;
+	public static final int GO_HOME = 0;
+	public static final int CLEAR_ROWS = 1;
+	
 	public int agent_state = FIND_CORNER;
 	
 	MyAgentState()
@@ -107,6 +106,7 @@ class MyAgentProgram implements AgentProgram {
 	
 	// Here you can define your variables!
 	public int bumps = 0;
+	public int turns = 0;
 	public int iterationCounter = 1000;
 	public MyAgentState state = new MyAgentState();
 	
@@ -202,28 +202,48 @@ class MyAgentProgram implements AgentProgram {
 	    } 
 	    else
 	    {
+	    	switch (state.agent_state) {
+	    	case MyAgentState.GO_HOME:
+	    		if (state.agent_x_position == 1 && state.agent_y_position == 1) {
+	    			if (state.agent_direction != MyAgentState.EAST) {
+	    				state.agent_last_action=state.ACTION_TURN_RIGHT;
+	    				return LIUVacuumEnvironment.ACTION_TURN_RIGHT;
+	    			}
+	    			else {
+	    				state.agent_state = MyAgentState.CLEAR_ROWS;
+	    				state.agent_last_action = state.ACTION_NONE;
+	    				return NoOpAction.NO_OP;
+	    			}
+	    		}
+	    	}
+	    	
+	    	
 	    	if (bump)
 	    	{
-	    		bumps++;
 	    		switch (state.agent_state) {
-	    		case MyAgentState.FIND_CORNER:
-	    			if (bumps >= 2) {
-	    				state.agent_state = MyAgentState.TURN;
-	    			}
+	    		case MyAgentState.GO_HOME:
+	    			System.out.println("GO HOME");
+	    			state.agent_state = MyAgentState.CLEAR_ROWS;
 	    			break;
-	    		case MyAgentState.TURN:
-		    		state.agent_state = MyAgentState.CLEAR_ROWS;
-		    		break;
 	    		case MyAgentState.CLEAR_ROWS:
+	    			
 	    			break;
 	    		
-	    	}
-	    		state.agent_direction = (state.agent_direction+1 % 4);
+	    		}
+	    		state.agent_direction = (state.agent_direction+1) % 4;
 	    		state.agent_last_action = state.ACTION_TURN_RIGHT;
 	    		return LIUVacuumEnvironment.ACTION_TURN_RIGHT;
 	    	}
 	    	else
 	    	{
+	    		switch (state.agent_state) {
+	    		case MyAgentState.TURN:
+	    			System.out.println("TURN CLEAR");
+	    			state.agent_state = MyAgentState.CLEAR_ROWS;
+	    			state.agent_direction = (state.agent_direction+1) % 4;
+		    		state.agent_last_action = state.ACTION_TURN_RIGHT;
+		    		return LIUVacuumEnvironment.ACTION_TURN_RIGHT;
+	    		}
 	    		state.agent_last_action=state.ACTION_MOVE_FORWARD;
 	    		return LIUVacuumEnvironment.ACTION_MOVE_FORWARD;
 	    	}
