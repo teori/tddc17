@@ -6,6 +6,8 @@ import aima.core.agent.Action;
 import aima.core.agent.AgentProgram;
 import aima.core.agent.Percept;
 import aima.core.agent.impl.*;
+import java.util.ArrayList;
+import java.awt.geom.Point2D;
 
 import java.util.Random;
 
@@ -37,7 +39,7 @@ class MyAgentState
 	public static final int GO_HOME = 0;
 	public static final int CLEAR_ROWS = 1;
 	
-	public int agent_state = FIND_CORNER;
+	public int agent_state = GO_HOME;
 	
 	MyAgentState()
 	{
@@ -105,6 +107,8 @@ class MyAgentProgram implements AgentProgram {
 	private Random random_generator = new Random();
 	
 	// Here you can define your variables!
+	private ArrayList<Point2D> squareQueue = new ArrayList<Point2D>();
+	private ArrayList<Point2D> eliminated = new ArrayList<Point2D>();
 	public int bumps = 0;
 	public int turns = 0;
 	public int iterationCounter = 1000;
@@ -151,9 +155,7 @@ class MyAgentProgram implements AgentProgram {
     	// This example agent program will update the internal agent state while only moving forward.
     	// START HERE - code below should be modified!
     	    	
-    	System.out.println("x=" + state.agent_x_position);
-    	System.out.println("y=" + state.agent_y_position);
-    	System.out.println("dir=" + state.agent_direction);
+    	
     	
 		
 	    iterationCounter--;
@@ -169,6 +171,25 @@ class MyAgentProgram implements AgentProgram {
 	    
 	    // State update based on the percept value and the last action
 	    state.updatePosition((DynamicPercept)percept);
+	    System.out.println("x=" + state.agent_x_position);
+    	System.out.println("y=" + state.agent_y_position);
+    	System.out.println("dir=" + state.agent_direction);
+    	
+    	if (!bump && (state.world[state.agent_y_position][state.agent_x_position] == state.UNKNOWN || state.world[state.agent_y_position][state.agent_x_position] == state.DIRT)) {
+    		// köa grannar
+    		if (state.world[state.agent_y_position][state.agent_x_position+1] == state.UNKNOWN)
+    			squareQueue.add(new Point2D.Double(state.agent_x_position+1, state.agent_y_position));
+    		
+    		if (state.world[state.agent_y_position][state.agent_x_position-1] == state.UNKNOWN)
+    			squareQueue.add(new Point2D.Double(state.agent_x_position-1, state.agent_y_position));
+    		
+    		if (state.world[state.agent_y_position+1][state.agent_x_position] == state.UNKNOWN)
+    			squareQueue.add(new Point2D.Double(state.agent_x_position, state.agent_y_position+1));
+    		
+    		if (state.world[state.agent_y_position-1][state.agent_x_position] == state.UNKNOWN)
+    			squareQueue.add(new Point2D.Double(state.agent_x_position, state.agent_y_position-1));
+    	}
+	    System.out.println(squareQueue);
 	    if (bump) {
 			switch (state.agent_direction) {
 			case MyAgentState.NORTH:
@@ -236,14 +257,14 @@ class MyAgentProgram implements AgentProgram {
 	    	}
 	    	else
 	    	{
-	    		switch (state.agent_state) {
+	    		/*switch (state.agent_state) {
 	    		case MyAgentState.TURN:
 	    			System.out.println("TURN CLEAR");
 	    			state.agent_state = MyAgentState.CLEAR_ROWS;
 	    			state.agent_direction = (state.agent_direction+1) % 4;
 		    		state.agent_last_action = state.ACTION_TURN_RIGHT;
 		    		return LIUVacuumEnvironment.ACTION_TURN_RIGHT;
-	    		}
+	    		}*/
 	    		state.agent_last_action=state.ACTION_MOVE_FORWARD;
 	    		return LIUVacuumEnvironment.ACTION_MOVE_FORWARD;
 	    	}
