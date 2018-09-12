@@ -7,7 +7,6 @@ import aima.core.agent.AgentProgram;
 import aima.core.agent.Percept;
 import aima.core.agent.impl.*;
 import java.util.ArrayList;
-import java.awt.geom.Point2D;
 
 import java.util.Random;
 
@@ -36,10 +35,6 @@ class MyAgentState
 	public static final int WEST = 3;
 	public int agent_direction = EAST;
 	
-	public static final int GO_HOME = 0;
-	public static final int CLEAR_ROWS = 1;
-	
-	public int agent_state = GO_HOME;
 	
 	MyAgentState()
 	{
@@ -101,17 +96,48 @@ class MyAgentState
 	}
 }
 
+class Point{
+	private int x;
+	private int y;
+	
+	Point(int x, int y) {
+		this.x = x;
+		this.y = y;
+	}
+	
+	public int getX() {
+		return x;
+	}
+	
+	public int getY() {
+		return y;
+	}
+	
+	@Override
+	public boolean equals(Object o) {
+		if (o == null) return false;
+		if (!(o instanceof Point)) return false;
+		if (o == this) return true;
+		
+		Point other = (Point) o;
+		return other.x == this.x && other.y == this.y;
+	}
+	
+	public String toString() {
+		return "(" + x + "," + y + ")";
+	}
+}
+
 class MyAgentProgram implements AgentProgram {
 
 	private int initnialRandomActions = 10;
 	private Random random_generator = new Random();
 	
 	// Here you can define your variables!
-	private ArrayList<Point2D> squareQueue = new ArrayList<Point2D>();
-	private ArrayList<Point2D> eliminated = new ArrayList<Point2D>();
-	public int bumps = 0;
-	public int turns = 0;
-	public int iterationCounter = 1000;
+	private ArrayList<Point> squareQueue = new ArrayList<Point>();
+	private ArrayList<Point> visited = new ArrayList<Point>();
+	private ArrayList<Point> path = new ArrayList<Point>();
+	public int iterationCounter = 2*20*20;
 	public MyAgentState state = new MyAgentState();
 	
 	// moves the Agent to a random start position
@@ -134,6 +160,66 @@ class MyAgentProgram implements AgentProgram {
 		} 
 		state.agent_last_action=state.ACTION_MOVE_FORWARD;
 		return LIUVacuumEnvironment.ACTION_MOVE_FORWARD;
+	}
+	
+	private Action moveForward() {
+		state.agent_last_action=state.ACTION_MOVE_FORWARD;
+		return LIUVacuumEnvironment.ACTION_MOVE_FORWARD;
+	}
+	
+	private Action turnRight() {
+		state.agent_direction = (state.agent_direction+1) % 4;
+		state.agent_last_action = state.ACTION_TURN_RIGHT;
+		return LIUVacuumEnvironment.ACTION_TURN_RIGHT;
+	}
+	
+	private Action turnLeft() {
+		state.agent_direction = (state.agent_direction-1) % 4;
+		if (state.agent_direction < 0) {
+			state.agent_direction += 4;
+		}
+		
+		state.agent_last_action = state.ACTION_TURN_LEFT;
+		return LIUVacuumEnvironment.ACTION_TURN_LEFT;
+	}
+	
+	private void addSquare(int x, int y) {
+		Point point = new Point(x,y);
+		if (state.world[x][y] != state.WALL && !squareQueue.contains(point) && !visited.contains(point))
+			squareQueue.add(0,point);
+	}
+	
+	private boolean isAdjacent(Point square) {
+		int dx = state.agent_x_position - square.getX();
+		int dy = state.agent_y_position - square.getY();
+		
+		return dx*dx + dy*dy == 1;
+	}
+	
+	private int squareDirection(Point square) {
+		if (square.getX() < state.agent_x_position) {
+			return MyAgentState.WEST;
+		} else if (square.getX() > state.agent_x_position) {
+			return MyAgentState.EAST;
+		}
+		
+		if (square.getY() < state.agent_y_position) {
+			return MyAgentState.NORTH;
+		} else {
+			return MyAgentState.SOUTH;
+		}
+	}
+	
+	private Action moveToAdjacent(Point square) {
+		int squareDir = squareDirection(square);
+		
+		if (squareDir == state.agent_direction) {
+			return moveForward();
+		} else if (squareDir - state.agent_direction == 1) {
+			return turnRight();
+		}
+		
+		return turnLeft();
 	}
 	
 	
@@ -175,21 +261,21 @@ class MyAgentProgram implements AgentProgram {
     	System.out.println("y=" + state.agent_y_position);
     	System.out.println("dir=" + state.agent_direction);
     	
-    	if (!bump && (state.world[state.agent_y_position][state.agent_x_position] == state.UNKNOWN || state.world[state.agent_y_position][state.agent_x_position] == state.DIRT)) {
+    	Point currentSquare = new Point(state.agent_x_position, state.agent_y_position);
+    	
+    	if (!visited.contains(currentSquare)) {
     		// köa grannar
-    		if (state.world[state.agent_y_position][state.agent_x_position+1] == state.UNKNOWN)
-    			squareQueue.add(new Point2D.Double(state.agent_x_position+1, state.agent_y_position));
-    		
-    		if (state.world[state.agent_y_position][state.agent_x_position-1] == state.UNKNOWN)
-    			squareQueue.add(new Point2D.Double(state.agent_x_position-1, state.agent_y_position));
-    		
-    		if (state.world[state.agent_y_position+1][state.agent_x_position] == state.UNKNOWN)
-    			squareQueue.add(new Point2D.Double(state.agent_x_position, state.agent_y_position+1));
-    		
-    		if (state.world[state.agent_y_position-1][state.agent_x_position] == state.UNKNOWN)
-    			squareQueue.add(new Point2D.Double(state.agent_x_position, state.agent_y_position-1));
+    		addSquare(state.agent_x_position+1,state.agent_y_position);
+    		addSquare(state.agent_x_position,state.agent_y_position+1);
+    		addSquare(state.agent_x_position-1,state.agent_y_position);
+    		addSquare(state.agent_x_position,state.agent_y_position-1);
+    		visited.add(0,currentSquare);
     	}
-	    System.out.println(squareQueue);
+    	
+    	
+	    /*System.out.println("Queue: " + squareQueue);
+	    System.out.println("Visited: " + visited);
+	    System.out.println("Path: " + path);*/
 	    if (bump) {
 			switch (state.agent_direction) {
 			case MyAgentState.NORTH:
@@ -223,50 +309,36 @@ class MyAgentProgram implements AgentProgram {
 	    } 
 	    else
 	    {
-	    	switch (state.agent_state) {
-	    	case MyAgentState.GO_HOME:
-	    		if (state.agent_x_position == 1 && state.agent_y_position == 1) {
-	    			if (state.agent_direction != MyAgentState.EAST) {
-	    				state.agent_last_action=state.ACTION_TURN_RIGHT;
-	    				return LIUVacuumEnvironment.ACTION_TURN_RIGHT;
-	    			}
-	    			else {
-	    				state.agent_state = MyAgentState.CLEAR_ROWS;
-	    				state.agent_last_action = state.ACTION_NONE;
-	    				return NoOpAction.NO_OP;
-	    			}
+	    	if (!squareQueue.isEmpty()) {
+	    	Point top = squareQueue.get(0);
+	    	if (isAdjacent(top)) {
+	    		Action nextAction = moveToAdjacent(top);
+	    		if (nextAction == LIUVacuumEnvironment.ACTION_MOVE_FORWARD){
+	    			squareQueue.remove(0);
+	    			if (!path.contains(currentSquare))
+	    				path.add(0,currentSquare);
 	    		}
-	    	}
-	    	
-	    	
-	    	if (bump)
-	    	{
-	    		switch (state.agent_state) {
-	    		case MyAgentState.GO_HOME:
-	    			System.out.println("GO HOME");
-	    			state.agent_state = MyAgentState.CLEAR_ROWS;
-	    			break;
-	    		case MyAgentState.CLEAR_ROWS:
-	    			
-	    			break;
 	    		
+	    		return nextAction;
+	    	} else {
+	    		top = path.get(0);
+	    		if (top.equals(currentSquare)) {
+	    			path.remove(0);
+	    			top = path.get(0);
 	    		}
-	    		state.agent_direction = (state.agent_direction+1) % 4;
-	    		state.agent_last_action = state.ACTION_TURN_RIGHT;
-	    		return LIUVacuumEnvironment.ACTION_TURN_RIGHT;
+	    		Action nextAction = moveToAdjacent(top);
+	    		if (nextAction == LIUVacuumEnvironment.ACTION_MOVE_FORWARD)
+	    			path.remove(0);
+	    		return nextAction;
 	    	}
-	    	else
-	    	{
-	    		/*switch (state.agent_state) {
-	    		case MyAgentState.TURN:
-	    			System.out.println("TURN CLEAR");
-	    			state.agent_state = MyAgentState.CLEAR_ROWS;
-	    			state.agent_direction = (state.agent_direction+1) % 4;
-		    		state.agent_last_action = state.ACTION_TURN_RIGHT;
-		    		return LIUVacuumEnvironment.ACTION_TURN_RIGHT;
-	    		}*/
-	    		state.agent_last_action=state.ACTION_MOVE_FORWARD;
-	    		return LIUVacuumEnvironment.ACTION_MOVE_FORWARD;
+	    	} else {
+	    		if (state.agent_x_position != 1) {
+	    			return moveToAdjacent(new Point(state.agent_x_position-1, state.agent_y_position));
+	    		} else if (state.agent_y_position != 1) {
+	    			return moveToAdjacent(new Point(state.agent_x_position, state.agent_y_position-1));
+	    		} else {
+	    			return NoOpAction.NO_OP;
+	    		}
 	    	}
 	    }
 	}
