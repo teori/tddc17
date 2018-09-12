@@ -138,7 +138,7 @@ class MyAgentProgram implements AgentProgram {
 	private ArrayList<Point> visited = new ArrayList<Point>();
 	private ArrayList<Point> path = new ArrayList<Point>();
 	private ArrayList<Point> homePath = new ArrayList<Point>();
-	public int iterationCounter = 100*20*20;
+	public int iterationCounter = 2*20*20;
 	public MyAgentState state = new MyAgentState();
 	
 	// moves the Agent to a random start position
@@ -383,18 +383,18 @@ class MyAgentProgram implements AgentProgram {
 	    		return nextAction;
 	    	}
 	    	} else {
-	    		if (!(state.agent_x_position == 1 && state.agent_y_position == 1)) {
+	    		if (state.agent_x_position != 1 && state.agent_y_position != 1) {
 	    			if (homePath.isEmpty()) {
 	    				homePath = BFS();
+	    			} else {
+	    				Point top = homePath.get(0);
+	    				Action nextAction = moveToAdjacent(top);
+	    	    		if (nextAction == LIUVacuumEnvironment.ACTION_MOVE_FORWARD){
+	    	    			homePath.remove(0);
+	    	    		}
+	    	    		
+	    	    		return nextAction;
 	    			}
-	    			
-    				Point top = homePath.get(0);
-    				Action nextAction = moveToAdjacent(top);
-    	    		if (nextAction == LIUVacuumEnvironment.ACTION_MOVE_FORWARD){
-    	    			homePath.remove(0);
-    	    		}
-    	    		
-    	    		return nextAction;
 	    		} else {
 	    			state.agent_last_action = state.ACTION_NONE;
 	    			return NoOpAction.NO_OP;

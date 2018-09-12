@@ -137,8 +137,7 @@ class MyAgentProgram implements AgentProgram {
 	private ArrayList<Point> squareQueue = new ArrayList<Point>();
 	private ArrayList<Point> visited = new ArrayList<Point>();
 	private ArrayList<Point> path = new ArrayList<Point>();
-	private ArrayList<Point> homePath = new ArrayList<Point>();
-	public int iterationCounter = 100*20*20;
+	public int iterationCounter = 2*20*20;
 	public MyAgentState state = new MyAgentState();
 	
 	// moves the Agent to a random start position
@@ -230,28 +229,12 @@ class MyAgentProgram implements AgentProgram {
 		
 	}
 	
-	private ArrayList<Point> reconstructHomePath(ArrayList<Point[]> visited, Point start) {
-		ArrayList<Point> homePath = new ArrayList<Point>();
-		Point[] current = visited.get(visited.size()-1);
-		
-		while (!start.equals(current[0])) {
-			homePath.add(0,current[0]);
-			for (Point[] p : visited) {
-				if (p[0] == current[1]) {
-					current = p;
-					break;
-				}
-			}
-		}
-		
-		return homePath;
-	}
-	
 	private ArrayList<Point> BFS() {
 		Point startSquare = new Point(state.agent_x_position, state.agent_y_position);
 		Point currentSquare = startSquare;
 		Point homeSquare = new Point(1, 1);
 		
+		ArrayList<Point> homePath = new ArrayList<Point>();
 		ArrayList<Point[]> frontier = new ArrayList<Point[]>();
 		ArrayList<Point[]> visited = new ArrayList<Point[]>();
 		
@@ -271,7 +254,7 @@ class MyAgentProgram implements AgentProgram {
 			
 		}
 		
-		return reconstructHomePath(visited, startSquare);
+		
 	}
 	
 	@Override
@@ -383,24 +366,6 @@ class MyAgentProgram implements AgentProgram {
 	    		return nextAction;
 	    	}
 	    	} else {
-	    		if (!(state.agent_x_position == 1 && state.agent_y_position == 1)) {
-	    			if (homePath.isEmpty()) {
-	    				homePath = BFS();
-	    			}
-	    			
-    				Point top = homePath.get(0);
-    				Action nextAction = moveToAdjacent(top);
-    	    		if (nextAction == LIUVacuumEnvironment.ACTION_MOVE_FORWARD){
-    	    			homePath.remove(0);
-    	    		}
-    	    		
-    	    		return nextAction;
-	    		} else {
-	    			state.agent_last_action = state.ACTION_NONE;
-	    			return NoOpAction.NO_OP;
-	    		}
-	    		/*
-	    		System.out.println(BFS());
 	    		if (state.agent_x_position != 1) {
 	    			return moveToAdjacent(new Point(state.agent_x_position-1, state.agent_y_position));
 	    		} else if (state.agent_y_position != 1) {
@@ -408,7 +373,7 @@ class MyAgentProgram implements AgentProgram {
 	    		} else {
 	    			state.agent_last_action = state.ACTION_NONE;
 	    			return NoOpAction.NO_OP;
-	    		}*/
+	    		}
 	    	}
 	    }
 	}
