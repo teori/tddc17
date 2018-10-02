@@ -244,10 +244,6 @@ class MyAgentProgram implements AgentProgram {
 
 	/**
 	 * Helper function to decide whether to add a square to the frontier in BFS.
-	 * @param frontier
-	 * @param visited
-	 * @param child
-	 * @param parent
 	 */
 	private void addToFrontier(ArrayList<Node> frontier, ArrayList<Node> visited, Point child, Point parent) {
 		if (!frontier.contains(child) &&
@@ -260,9 +256,6 @@ class MyAgentProgram implements AgentProgram {
 
 	/**
 	 * Reconstruct the path from the given start square to the home square.
-	 * @param visited Nodes visited by BFS
-	 * @param start Start square
-	 * @return List of squares that lead from the start square to the home square
 	 */
 	private ArrayList<Point> reconstructPath(ArrayList<Node> visited, Point start) {
 		ArrayList<Point> homePath = new ArrayList<Point>();
@@ -353,7 +346,7 @@ class MyAgentProgram implements AgentProgram {
 		Point currentSquare = new Point(state.agent_x_position, state.agent_y_position);
 
 		if (!visited.contains(currentSquare)) {
-			// Push neighbours to stack.
+			// Push neighbors to stack.
 			int dx = 0;
 			int dy = 1;
 
@@ -385,11 +378,7 @@ class MyAgentProgram implements AgentProgram {
 			visited.add(0,currentSquare);
 		}
 
-		/*
-	    System.out.println("Queue: " + squareStack);
-	    System.out.println("Visited: " + visited);
-	    System.out.println("Path: " + path);
-		 */
+
 		if (bump) {
 			switch (state.agent_direction) {
 			case MyAgentState.NORTH:
