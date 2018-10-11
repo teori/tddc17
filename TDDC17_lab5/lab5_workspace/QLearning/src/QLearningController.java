@@ -24,7 +24,7 @@ public class QLearningController extends Controller {
 	RocketEngine middleEngine;
 	RocketEngine rightEngine;
 
-	final static int NUM_ACTIONS = 7; /* The takeAction function must be changed if this is modified */
+	final static int NUM_ACTIONS = 5; /* The takeAction function must be changed if this is modified */
 	
 	/* Keep track of the previous state and action */
 	String previous_state = null;
@@ -89,6 +89,15 @@ public class QLearningController extends Controller {
 		/* TODO: Remember to change NUM_ACTIONS constant to reflect the number of actions (including 0, no action) */
 		
 		/* TODO: IMPLEMENT THIS FUNCTION */
+		resetRockets();
+		
+		switch (action) {
+		case 0: break;
+		case 1: leftEngine.setBursting(true); break;
+		case 2: rightEngine.setBursting(true); break;
+		case 3: middleEngine.setBursting(true); break;
+		default: break;
+		}
 		
 	}
 
@@ -125,7 +134,8 @@ public class QLearningController extends Controller {
 
 				
 				/* TODO: IMPLEMENT Q-UPDATE HERE! */
-				
+				double Q = Qtable.get(prev_stateaction) + alpha(Ntable.get(prev_stateaction))*(previous_reward + GAMMA_DISCOUNT_FACTOR*getMaxActionQValue(new_state) - Qtable.get(prev_stateaction));
+				Qtable.put(prev_stateaction, Q);
 				/* See top for constants and below for helper functions */
 				
 				

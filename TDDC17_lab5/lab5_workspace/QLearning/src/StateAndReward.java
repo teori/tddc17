@@ -6,7 +6,7 @@ public class StateAndReward {
 
 		/* TODO: IMPLEMENT THIS FUNCTION */
 
-		String state = "OneStateToRuleThemAll";
+		String state = discretize(angle, 10, -Math.PI, Math.PI) + ",";
 		
 		return state;
 	}
@@ -16,7 +16,7 @@ public class StateAndReward {
 
 		/* TODO: IMPLEMENT THIS FUNCTION */
 		
-		double reward = 0;
+		double reward = Math.PI - Math.abs(angle);
 
 		return reward;
 	}
@@ -25,8 +25,12 @@ public class StateAndReward {
 	public static String getStateHover(double angle, double vx, double vy) {
 
 		/* TODO: IMPLEMENT THIS FUNCTION */
+		
+		String angleState = discretize(angle, 8, -Math.PI, Math.PI) + ",";
+		String vxState = discretize(vx, 2, -7, 7) + ",";
+		String vyState = discretize(vy, 6, -7, 7) + ",";
 
-		String state = "OneStateToRuleThemAll2";
+		String state = angleState+vxState+vyState;
 		
 		return state;
 	}
@@ -35,8 +39,11 @@ public class StateAndReward {
 	public static double getRewardHover(double angle, double vx, double vy) {
 
 		/* TODO: IMPLEMENT THIS FUNCTION */
+		double angleReward = Math.PI - Math.abs(angle);
+		double vxReward = 7 - Math.abs(vx);
+		double vyReward = 7 - Math.abs(vy);
 		
-		double reward = 0;
+		double reward = angleReward + vxReward + vyReward;
 
 		return reward;
 	}
